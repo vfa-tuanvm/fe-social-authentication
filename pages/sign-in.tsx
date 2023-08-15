@@ -5,6 +5,7 @@ import {
   CardContent,
   Divider,
   FormControl,
+  FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
@@ -22,10 +23,29 @@ import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
 import { red } from "@mui/material/colors";
 import React from "react";
 import Link from "next/link";
+import { useForm, Controller } from "react-hook-form";
+import { ISignIn } from "../types/form.type";
+import { SIGNIN_QUERY } from "../graphql/sign-in";
+import { toast } from "react-hot-toast";
+import client from "../apollo-client";
+import { ISignInResponse } from "../types/graphql.respose";
+import { useAppDispatch } from "../redux/redux-hook";
+import { storeUser } from "../redux/slices/userSilce";
+import { useRouter } from "next/navigation";
 
 export default function SignIn() {
+  const router = useRouter();
   const theme = useTheme();
+  const dispatch = useAppDispatch();
+
   const [showPassword, setShowPassword] = React.useState(false);
+
+  const { control, handleSubmit } = useForm<ISignIn>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -33,6 +53,25 @@ export default function SignIn() {
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
+  };
+
+  const onSubmit = async (value: ISignIn) => {
+    try {
+      const { data } = await client.query<ISignInResponse>({
+        query: SIGNIN_QUERY,
+        variables: {
+          email: value.email,
+          password: value.password,
+        },
+      });
+
+      dispatch(storeUser(data.signin));
+
+      router.push("/");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -59,51 +98,105 @@ export default function SignIn() {
               Have a nice day 🖐
             </Typography>
           </Box>
-
-          <Grid container rowSpacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                id="outlined-basic"
-                label="Email"
-                variant="outlined"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel htmlFor="outlined-adornment-password">
-                  Password
-                </InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-password"
-                  type={showPassword ? "text" : "password"}
-                  endAdornment={
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        onMouseDown={handleMouseDownPassword}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  }
-                  label="Password"
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Grid container rowSpacing={2}>
+              <Grid item xs={12}>
+                <Controller
+                  name="email"
+                  control={control}
+                  rules={{
+                    required: {
+                      value: true,
+                      message: "Email is required",
+                    },
+                  }}
+                  render={({
+                    field: { onChange, value },
+                    fieldState: { invalid, error },
+                  }) => (
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      label="Email"
+                      variant="outlined"
+                      helperText={error ? error.message : null}
+                      error={invalid}
+                      value={value}
+                      onChange={onChange}
+                    />
+                  )}
                 />
-              </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel htmlFor="outlined-adornment-password">
+                    Password
+                  </InputLabel>
+                  <Controller
+                    name="password"
+                    control={control}
+                    rules={{
+                      required: {
+                        value: true,
+                        message: "Password is required",
+                      },
+                      pattern: {
+                        value:
+                          /((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/,
+                        message: "Password too weak",
+                      },
+                    }}
+                    render={({
+                      field: { onChange, value },
+                      fieldState: { invalid, error },
+                    }) => (
+                      <>
+                        <OutlinedInput
+                          id="outlined-adornment-password"
+                          value={value}
+                          onChange={onChange}
+                          error={invalid}
+                          type={showPassword ? "text" : "password"}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <IconButton
+                                aria-label="toggle password visibility"
+                                onClick={handleClickShowPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                edge="end"
+                              >
+                                {showPassword ? (
+                                  <VisibilityOff />
+                                ) : (
+                                  <Visibility />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          }
+                          label="Password"
+                        />
+                        {invalid && (
+                          <FormHelperText error>
+                            {error?.message}
+                          </FormHelperText>
+                        )}
+                      </>
+                    )}
+                  />
+                </FormControl>
+              </Grid>
             </Grid>
-          </Grid>
 
-          <Button
-            fullWidth
-            size="large"
-            variant="contained"
-            sx={{ marginTop: "32px" }}
-          >
-            Sign In
-          </Button>
-
+            <Button
+              type="submit"
+              fullWidth
+              size="large"
+              variant="contained"
+              sx={{ marginTop: "32px" }}
+            >
+              Sign In
+            </Button>
+          </form>
           <Divider sx={{ marginY: "16px" }}>
             <Typography variant="subtitle2">OR</Typography>
           </Divider>
