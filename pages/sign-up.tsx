@@ -25,7 +25,7 @@ import client from "../apollo-client";
 import { SIGNUP_MUTATION } from "../graphql/sign-up";
 import { toast } from "react-hot-toast";
 import { useAppDispatch } from "../redux/redux-hook";
-import { ISignUpResponse } from "../types/graphql.respose";
+import { IGraphQLError, ISignUpResponse } from "../types/graphql.respose";
 import { storeUser } from "../redux/slices/userSilce";
 import { useRouter } from "next/router";
 
@@ -44,10 +44,8 @@ export default function SignUp() {
   });
 
   const [showPassword, setShowPassword] = React.useState(false);
-  const [showRepassword, setShowRepassword] = React.useState(false);
 
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleClickShowRepassword = () => setShowRepassword((show) => !show);
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
 
   const handleMouseDownPassword = (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -72,8 +70,22 @@ export default function SignUp() {
 
       router.push("/");
     } catch (error: any) {
-      console.log("error: ", error);
-      toast.error(error.message);
+      const { graphQLErrors } = error;
+
+      if (graphQLErrors) {
+        const { statusCode } = graphQLErrors[0] as IGraphQLError;
+
+        switch (statusCode) {
+          case 409:
+            toast.error("Email has been used");
+            break;
+          default:
+            toast.error("Something went wrong");
+            break;
+        }
+      } else {
+        toast.error("Something went wrong");
+      }
     }
   };
 
@@ -235,7 +247,7 @@ export default function SignUp() {
                       <>
                         <OutlinedInput
                           id="re-password"
-                          type={showRepassword ? "text" : "password"}
+                          type={showPassword ? "text" : "password"}
                           error={invalid}
                           onChange={onChange}
                           value={value}
@@ -243,11 +255,11 @@ export default function SignUp() {
                             <InputAdornment position="end">
                               <IconButton
                                 aria-label="toggle password visibility"
-                                onClick={handleClickShowRepassword}
+                                onClick={handleClickShowPassword}
                                 onMouseDown={handleMouseDownPassword}
                                 edge="end"
                               >
-                                {showRepassword ? (
+                                {showPassword ? (
                                   <VisibilityOff />
                                 ) : (
                                   <Visibility />

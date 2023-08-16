@@ -7,11 +7,10 @@ import client from "../apollo-client";
 import { Toaster } from "react-hot-toast";
 import { Provider } from "react-redux";
 import { store } from "../redux/store";
-import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
 
 export default function App({ Component, pageProps }: AppProps) {
-  loadDevMessages();
-  loadErrorMessages();
+  // loadDevMessages();
+  // loadErrorMessages();
 
   return (
     <ApolloProvider client={client}>

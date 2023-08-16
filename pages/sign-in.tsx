@@ -28,7 +28,7 @@ import { ISignIn } from "../types/form.type";
 import { SIGNIN_QUERY } from "../graphql/sign-in";
 import { toast } from "react-hot-toast";
 import client from "../apollo-client";
-import { ISignInResponse } from "../types/graphql.respose";
+import { IGraphQLError, ISignInResponse } from "../types/graphql.respose";
 import { useAppDispatch } from "../redux/redux-hook";
 import { storeUser } from "../redux/slices/userSilce";
 import { useRouter } from "next/navigation";
@@ -70,7 +70,26 @@ export default function SignIn() {
       router.push("/");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      toast.error(error.message);
+      const { graphQLErrors } = error;
+
+      if (graphQLErrors) {
+        const { statusCode } = graphQLErrors[0] as IGraphQLError;
+        console.log("statusCode: ", statusCode);
+
+        switch (statusCode) {
+          case 404:
+            toast.error("Email not found");
+            break;
+          case 406:
+            toast.error("Wrong password");
+            break;
+          default:
+            toast.error("Something went wrong");
+            break;
+        }
+      } else {
+        toast.error("Something went wrong");
+      }
     }
   };
 

@@ -13,3 +13,9 @@ export interface ISignInResponse {
 export interface ISignUpResponse {
 	signup: IAuthResponse;
 }
+
+export interface IGraphQLError {
+	code: string;
+	message: string;
+	statusCode: number;
+}
