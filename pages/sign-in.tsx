@@ -25,7 +25,7 @@ import React from "react";
 import Link from "next/link";
 import { useForm, Controller } from "react-hook-form";
 import { ISignIn } from "../types/form.type";
-import { SIGNIN_QUERY } from "../graphql/sign-in";
+import { SIGNIN_MUTATION } from "../graphql/sign-in";
 import { toast } from "react-hot-toast";
 import client from "../apollo-client";
 import { IGraphQLError, ISignInResponse } from "../types/graphql.respose";
@@ -57,15 +57,17 @@ export default function SignIn() {
 
   const onSubmit = async (value: ISignIn) => {
     try {
-      const { data } = await client.query<ISignInResponse>({
-        query: SIGNIN_QUERY,
+      const { data } = await client.mutate<ISignInResponse>({
+        mutation: SIGNIN_MUTATION,
         variables: {
           email: value.email,
           password: value.password,
         },
       });
 
-      dispatch(storeUser(data.signin));
+      if (data) {
+        dispatch(storeUser(data.signin));
+      }
 
       router.push("/");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
