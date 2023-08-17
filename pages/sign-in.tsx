@@ -14,6 +14,7 @@ import {
   TextField,
   Typography,
   useTheme,
+  Link as MuiLink,
 } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import Visibility from "@mui/icons-material/Visibility";
@@ -32,6 +33,7 @@ import { IGraphQLError, ISignInResponse } from "../types/graphql.respose";
 import { useAppDispatch } from "../redux/redux-hook";
 import { storeUser } from "../redux/slices/userSilce";
 import { useRouter } from "next/navigation";
+import { genURLFacebookLogin } from "../utils/facebook";
 
 export default function SignIn() {
   const router = useRouter();
@@ -224,23 +226,37 @@ export default function SignIn() {
 
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Button
-                fullWidth
+              <MuiLink
+                href={genURLFacebookLogin()}
                 sx={{
-                  backgroundColor: red[600],
-                  ":hover": { backgroundColor: red[800] },
+                  backgroundColor: theme.palette.primary.main,
+                  borderRadius: 1,
+                  py: "6px",
+                  columnGap: "1rem",
+                  textDecoration: "none",
+                  color: "white",
+                  cursor: "pointer",
+                  textTransform: "uppercase",
+                  fontWeight: 500,
+                  fontSize: 14,
+                  "&:hover": {
+                    backgroundColor: theme.palette.primary.dark,
+                  },
                 }}
-                variant="contained"
-                startIcon={<GoogleIcon />}
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
               >
-                Google
-              </Button>
+                <FacebookOutlinedIcon />
+                Facebook
+              </MuiLink>
             </Grid>
             <Grid item xs={6}>
               <Button
                 fullWidth
                 variant="contained"
-                startIcon={<FacebookOutlinedIcon />}
+                sx={{ backgroundColor: red[700] }}
+                startIcon={<GoogleIcon />}
               >
                 Facebook
               </Button>
