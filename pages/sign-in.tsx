@@ -34,6 +34,7 @@ import { useAppDispatch } from "../redux/redux-hook";
 import { storeUser } from "../redux/slices/userSilce";
 import { useRouter } from "next/navigation";
 import { genURLFacebookLogin } from "../utils/facebook";
+import { genURLGoogleLogin } from "../utils/google";
 
 export default function SignIn() {
   const router = useRouter();
@@ -252,14 +253,30 @@ export default function SignIn() {
               </MuiLink>
             </Grid>
             <Grid item xs={6}>
-              <Button
-                fullWidth
-                variant="contained"
-                sx={{ backgroundColor: red[700] }}
-                startIcon={<GoogleIcon />}
+              <MuiLink
+                href={genURLGoogleLogin("login")}
+                sx={{
+                  backgroundColor: red[700],
+                  borderRadius: 1,
+                  py: "6px",
+                  columnGap: "1rem",
+                  textDecoration: "none",
+                  color: "white",
+                  cursor: "pointer",
+                  textTransform: "uppercase",
+                  fontWeight: 500,
+                  fontSize: 14,
+                  "&:hover": {
+                    backgroundColor: red[900],
+                  },
+                }}
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
               >
-                Facebook
-              </Button>
+                <GoogleIcon />
+                Googlle
+              </MuiLink>
             </Grid>
           </Grid>
 

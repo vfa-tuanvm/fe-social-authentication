@@ -18,6 +18,10 @@ export interface IFacebookLogin {
 	loginFacebook: IAuthResponse;
 }
 
+export interface IGoogleLogin {
+	loginGoogle: IAuthResponse;
+}
+
 export interface IGraphQLError {
 	code: string;
 	message: string;
