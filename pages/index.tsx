@@ -1,4 +1,4 @@
-import { Box, Card, Grid, Switch, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, Grid, TextField, Typography } from "@mui/material";
 import { useAppSelector } from "../redux/redux-hook";
 import { selectUser } from "../redux/slices/userSilce";
 import Avatar from "@mui/material/Avatar";
@@ -68,7 +68,14 @@ export default function Home() {
         alignItems: "center",
       }}
     >
-      <Card sx={{ width: "40%", padding: "16px", boxShadow: 3 }}>
+      <Card
+        sx={{
+          width: "35%",
+          padding: "40px",
+          boxShadow: 3,
+          borderRadius: "12px",
+        }}
+      >
         <Grid container rowSpacing="20px">
           {user.avatar && (
             <Grid item xs={12}>
@@ -97,22 +104,32 @@ export default function Home() {
               value={user.email}
             />
           </Grid>
-          {Object.values(SocialType).map((e) => (
-            <Grid item xs={6} key={e}>
+          {Object.values(SocialType).map((mediaType) => (
+            <Grid item xs={12} key={mediaType}>
               <Box
                 sx={{
                   display: "flex",
-                  justifyContent: "center",
+                  justifyContent: "space-between",
                   columnGap: "8px",
                   alignItems: "center",
                 }}
               >
-                <Switch
-                  checked={
-                    socialAccounts.find((acc) => acc.type === e) ? true : false
-                  }
-                />
-                <Typography>{e}</Typography>
+                <Grid item xs={8}>
+                  <Typography>{mediaType}</Typography>
+                </Grid>
+
+                <Grid item xs={4}>
+                  {socialAccounts.filter((acc) => acc.type === mediaType)
+                    .length > 0 ? (
+                    <Button fullWidth variant="contained" color="error">
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button fullWidth variant="contained">
+                      Connect
+                    </Button>
+                  )}
+                </Grid>
               </Box>
             </Grid>
           ))}
