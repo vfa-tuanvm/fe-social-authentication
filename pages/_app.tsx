@@ -7,13 +7,17 @@ import client from "../apollo-client";
 import { Toaster } from "react-hot-toast";
 import { Provider } from "react-redux";
 import { store } from "../redux/store";
+import { Roboto } from "next/font/google";
 
+const roboto = Roboto({ subsets: ["latin"], weight: "400" });
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <ApolloProvider client={client}>
       <Provider store={store}>
         <ThemeProvider theme={theme}>
-          <Component {...pageProps} />
+          <div className={roboto.className}>
+            <Component {...pageProps} />
+          </div>
         </ThemeProvider>
       </Provider>
       <Toaster />
