@@ -1,4 +1,16 @@
-import { Box, Button, Card, Grid, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useAppSelector } from "../redux/redux-hook";
 import { selectUser } from "../redux/slices/userSilce";
 import Avatar from "@mui/material/Avatar";
@@ -12,10 +24,23 @@ import client from "../apollo-client";
 import { GET_ACCOUNTS_QUERY } from "../graphql/home-page";
 import toast from "react-hot-toast";
 import { SocialType } from "../constance/enum";
+import { disconnect } from "../utils/home";
 
 export default function Home() {
   const user = useAppSelector(selectUser);
   const [socialAccounts, setSocialAccounts] = useState<ISocialAcount[]>([]);
+  const [open, setOpen] = useState(false);
+  const [disconnectedType, setDisconnectedType] = useState<SocialType>();
+
+  const handleClickOpen = (type: SocialType) => () => {
+    setDisconnectedType(type);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setDisconnectedType(undefined);
+  };
 
   const fetchListAccounts = async () => {
     const token = localStorage.getItem("accessToken");
@@ -37,7 +62,6 @@ export default function Home() {
 
       if (graphQLErrors) {
         const { statusCode } = graphQLErrors[0] as IGraphQLError;
-        console.log("statusCode: ", statusCode);
 
         switch (statusCode) {
           case 400:
@@ -50,6 +74,15 @@ export default function Home() {
         }
       } else {
         toast.error("Something went wrong");
+      }
+    }
+  };
+
+  const handleDisconnect = async () => {
+    if (disconnectedType) {
+      const respose = await disconnect(disconnectedType);
+      if (respose) {
+        setSocialAccounts(socialAccounts.filter((acc) => acc.type !== respose));
       }
     }
   };
@@ -121,7 +154,12 @@ export default function Home() {
                 <Grid item xs={4}>
                   {socialAccounts.filter((acc) => acc.type === mediaType)
                     .length > 0 ? (
-                    <Button fullWidth variant="contained" color="error">
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={handleClickOpen(mediaType)}
+                      color="error"
+                    >
                       Disconnect
                     </Button>
                   ) : (
@@ -135,6 +173,39 @@ export default function Home() {
           ))}
         </Grid>
       </Card>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Do you want to disconnect to{" "}
+          <Typography
+            variant="h6"
+            sx={{ textTransform: "capitalize", display: "inline" }}
+          >
+            {disconnectedType?.toLowerCase()}
+          </Typography>
+          ?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            You still be able to connect to{" "}
+            <Typography sx={{ textTransform: "capitalize", display: "inline" }}>
+              {disconnectedType?.toLowerCase()}
+            </Typography>{" "}
+            in the future.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleDisconnect} autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

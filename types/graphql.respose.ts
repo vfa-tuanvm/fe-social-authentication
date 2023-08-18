@@ -36,3 +36,7 @@ export interface ISocialAcount {
 export interface IGetSocialAccountsResponse {
 	getAccountsLinked: ISocialAcount[];
 }
+
+export interface IDisconnectResponse {
+	disconnect: string;
+}

@@ -8,3 +8,9 @@ export const GET_ACCOUNTS_QUERY = gql`
 		}
 	}
 `;
+
+export const DISCONNECT_MUTATION = gql`
+	mutation disconnect($type: String!) {
+		disconnect(type: $type)
+	}
+`;
