@@ -27,3 +27,12 @@ export interface IGraphQLError {
 	message: string;
 	statusCode: number;
 }
+
+export interface ISocialAcount {
+	socialId: string;
+	type: string;
+}
+
+export interface IGetSocialAccountsResponse {
+	getAccountsLinked: ISocialAcount[];
+}

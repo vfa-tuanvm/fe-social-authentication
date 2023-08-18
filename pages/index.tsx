@@ -2,9 +2,61 @@ import { Box, Card, Grid, Switch, TextField, Typography } from "@mui/material";
 import { useAppSelector } from "../redux/redux-hook";
 import { selectUser } from "../redux/slices/userSilce";
 import Avatar from "@mui/material/Avatar";
+import {
+  IGetSocialAccountsResponse,
+  IGraphQLError,
+  ISocialAcount,
+} from "../types/graphql.respose";
+import { useEffect, useState } from "react";
+import client from "../apollo-client";
+import { GET_ACCOUNTS_QUERY } from "../graphql/home-page";
+import toast from "react-hot-toast";
+import { SocialType } from "../constance/enum";
 
 export default function Home() {
   const user = useAppSelector(selectUser);
+  const [socialAccounts, setSocialAccounts] = useState<ISocialAcount[]>([]);
+
+  const fetchListAccounts = async () => {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      const { data } = await client.query<IGetSocialAccountsResponse>({
+        query: GET_ACCOUNTS_QUERY,
+        context: {
+          headers: {
+            authorization: token ? `Bearer ${token}` : "",
+          },
+        },
+      });
+
+      setSocialAccounts(data.getAccountsLinked);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      const { graphQLErrors } = error;
+
+      if (graphQLErrors) {
+        const { statusCode } = graphQLErrors[0] as IGraphQLError;
+        console.log("statusCode: ", statusCode);
+
+        switch (statusCode) {
+          case 400:
+            toast.error("You are unauthrorized");
+            break;
+
+          default:
+            toast.error("Something went wrong");
+            break;
+        }
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchListAccounts();
+  }, []);
 
   return (
     <Box
@@ -45,32 +97,25 @@ export default function Home() {
               value={user.email}
             />
           </Grid>
-          <Grid item xs={6}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                columnGap: "8px",
-                alignItems: "center",
-              }}
-            >
-              <Switch />
-              <Typography>Facebook</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                columnGap: "8px",
-                alignItems: "center",
-              }}
-            >
-              <Switch />
-              <Typography>Google</Typography>
-            </Box>
-          </Grid>
+          {Object.values(SocialType).map((e) => (
+            <Grid item xs={6} key={e}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  columnGap: "8px",
+                  alignItems: "center",
+                }}
+              >
+                <Switch
+                  checked={
+                    socialAccounts.find((acc) => acc.type === e) ? true : false
+                  }
+                />
+                <Typography>{e}</Typography>
+              </Box>
+            </Grid>
+          ))}
         </Grid>
       </Card>
     </Box>
