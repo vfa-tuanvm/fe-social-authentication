@@ -13,6 +13,8 @@ export default function FacebookRedirect() {
   const dispatch = useAppDispatch();
 
   const code = searchParams.get("code");
+  const state = searchParams.get("state");
+  console.log("state: ", state);
 
   const handleLogin = async () => {
     const { data } = await client.mutate<IFacebookLogin>({

@@ -40,3 +40,7 @@ export interface IGetSocialAccountsResponse {
 export interface IDisconnectResponse {
 	disconnect: string;
 }
+
+export interface IConnectResponse {
+	linkSocialAccount: ISocialAcount;
+}

@@ -6,6 +6,7 @@ import { IGoogleLogin } from "../../../types/graphql.respose";
 import client from "../../../apollo-client";
 import { Box, Typography } from "@mui/material";
 import { GOOGLE_LOGIN } from "../../../graphql/google";
+import { LoginLinkingOptions } from "../../../constance/enum";
 
 export default function GoogleRedirect() {
   const searchParams = useSearchParams();
@@ -13,6 +14,8 @@ export default function GoogleRedirect() {
   const dispatch = useAppDispatch();
 
   const code = searchParams.get("code");
+  const state = searchParams.get("state");
+  console.log("state: ", state);
 
   const handleLogin = async () => {
     const { data } = await client.mutate<IGoogleLogin>({
@@ -29,11 +32,18 @@ export default function GoogleRedirect() {
   };
 
   useEffect(() => {
-    if (code) {
-      handleLogin();
+    if (code && state) {
+      switch (state) {
+        case LoginLinkingOptions.Login:
+          handleLogin();
+          break;
+
+        default:
+          break;
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code]);
+  }, [code, state]);
 
   return (
     <Box
