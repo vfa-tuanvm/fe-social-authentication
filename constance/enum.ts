@@ -5,5 +5,5 @@ export enum SocialType {
 
 export enum LoginLinkingOptions {
 	Login = "LOGIN",
-	linking = "LINKING",
+	Linking = "LINKING",
 }

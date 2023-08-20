@@ -15,11 +15,18 @@ export const DISCONNECT_MUTATION = gql`
 	}
 `;
 
+export const GET_USER_INFO_QUERY = gql`
+	query getUserInfo {
+		getUserInfo {
+			fullName
+			avatar
+			email
+		}
+	}
+`;
+
 export const CONNECT_SOCIAL_MUTATION = gql`
 	mutation linkSocialAccount($code: String!, $type: String!, $redirectURL: String) {
-		linkSocialAccount(input: { code: $code, type: $type, redirectURL: $redirectURL }) {
-			socialId
-			type
-		}
+		linkSocialAccount(input: { code: $code, type: $type, redirectURL: $redirectURL })
 	}
 `;

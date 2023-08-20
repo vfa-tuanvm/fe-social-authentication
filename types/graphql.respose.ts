@@ -1,3 +1,5 @@
+import { UserSlice } from "../redux/slices/userSilce";
+
 export interface IAuthResponse {
 	fullName: string;
 	email: string;
@@ -43,4 +45,8 @@ export interface IDisconnectResponse {
 
 export interface IConnectResponse {
 	linkSocialAccount: ISocialAcount;
+}
+
+export interface IGetUserInfo {
+	getUserInfo: UserSlice;
 }

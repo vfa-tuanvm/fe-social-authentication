@@ -11,17 +11,23 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useAppSelector } from "../redux/redux-hook";
-import { selectUser } from "../redux/slices/userSilce";
+import { useAppDispatch, useAppSelector } from "../redux/redux-hook";
+import { selectUser, storeUser } from "../redux/slices/userSilce";
 import Avatar from "@mui/material/Avatar";
 import { ISocialAcount } from "../types/graphql.respose";
 import { useEffect, useState } from "react";
-import { SocialType } from "../constance/enum";
-import { getAccounts } from "../utils/home";
+import { LoginLinkingOptions, SocialType } from "../constance/enum";
+import { getAccounts, getUserInfo } from "../utils/home";
 import { disconnect } from "../utils/home";
+import { useRouter } from "next/router";
+import { genURLFacebookLogin } from "../utils/facebook";
+import { genURLGoogleLogin } from "../utils/google";
 
 export default function Home() {
   const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
   const [socialAccounts, setSocialAccounts] = useState<ISocialAcount[]>([]);
   const [open, setOpen] = useState(false);
   const [disconnectedType, setDisconnectedType] = useState<SocialType>();
@@ -43,6 +49,15 @@ export default function Home() {
     }
   };
 
+  const fetchUser = async () => {
+    if (!user.avatar && !user.email && !user.fullName) {
+      const respose = await getUserInfo();
+      if (respose) {
+        dispatch(storeUser(respose));
+      }
+    }
+  };
+
   const handleDisconnect = async () => {
     if (disconnectedType) {
       const respose = await disconnect(disconnectedType);
@@ -53,8 +68,33 @@ export default function Home() {
     setOpen(false);
   };
 
+  const handleConnect = (type: SocialType) => () => {
+    let url = "";
+    switch (type) {
+      case SocialType.Facebook:
+        url = genURLFacebookLogin(LoginLinkingOptions.Linking);
+        break;
+      case SocialType.Google:
+        url = genURLGoogleLogin(LoginLinkingOptions.Linking);
+        break;
+      default:
+        break;
+    }
+
+    if (url) {
+      router.push(url);
+    }
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    router.push("/sign-in");
+  };
+
   useEffect(() => {
     fetchListAccounts();
+    fetchUser();
   }, []);
 
   return (
@@ -76,15 +116,14 @@ export default function Home() {
         }}
       >
         <Grid container rowSpacing="20px">
-          {user.avatar && (
-            <Grid item xs={12}>
-              <Avatar
-                alt="Remy Sharp"
-                src={user.avatar}
-                sx={{ width: 100, height: 100, marginX: "auto" }}
-              />
-            </Grid>
-          )}
+          <Grid item xs={12}>
+            <Avatar
+              alt="Remy Sharp"
+              src={user.avatar ?? process.env.DEFAULT_AVATAR}
+              sx={{ width: 100, height: 100, marginX: "auto" }}
+            />
+          </Grid>
+
           <Grid item xs={12}>
             <TextField
               disabled
@@ -131,7 +170,11 @@ export default function Home() {
                       Disconnect
                     </Button>
                   ) : (
-                    <Button fullWidth variant="contained">
+                    <Button
+                      onClick={handleConnect(mediaType)}
+                      fullWidth
+                      variant="contained"
+                    >
                       Connect
                     </Button>
                   )}
@@ -140,6 +183,17 @@ export default function Home() {
             </Grid>
           ))}
         </Grid>
+        <Box
+          sx={{
+            marginTop: "56px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button onClick={handleSignOut} variant="contained">
+            Sign out
+          </Button>
+        </Box>
       </Card>
 
       <Dialog

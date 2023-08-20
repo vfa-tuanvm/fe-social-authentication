@@ -28,6 +28,7 @@ import { useAppDispatch } from "../redux/redux-hook";
 import { IGraphQLError, ISignUpResponse } from "../types/graphql.respose";
 import { storeUser } from "../redux/slices/userSilce";
 import { useRouter } from "next/router";
+import { storeToken } from "../utils/home";
 
 export default function SignUp() {
   const theme = useTheme();
@@ -65,10 +66,12 @@ export default function SignUp() {
       });
 
       if (data) {
-        dispatch(storeUser(data.signup));
+        const { avatar, fullName, email, accessToken, refreshToken } =
+          data.signup;
+        dispatch(storeUser({ avatar, fullName, email }));
+        storeToken(accessToken, refreshToken);
+        router.push("/");
       }
-
-      router.push("/");
     } catch (error: any) {
       const { graphQLErrors } = error;
 

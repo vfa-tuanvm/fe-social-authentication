@@ -6,6 +6,8 @@ import { storeUser } from "../../../redux/slices/userSilce";
 import { IFacebookLogin } from "../../../types/graphql.respose";
 import client from "../../../apollo-client";
 import { Box, Typography } from "@mui/material";
+import { connect, storeToken } from "../../../utils/home";
+import { LoginLinkingOptions, SocialType } from "../../../constance/enum";
 
 export default function FacebookRedirect() {
   const searchParams = useSearchParams();
@@ -14,7 +16,6 @@ export default function FacebookRedirect() {
 
   const code = searchParams.get("code");
   const state = searchParams.get("state");
-  console.log("state: ", state);
 
   const handleLogin = async () => {
     const { data } = await client.mutate<IFacebookLogin>({
@@ -26,16 +27,33 @@ export default function FacebookRedirect() {
     });
 
     if (data) {
-      dispatch(storeUser(data.loginFacebook));
+      const { avatar, fullName, email, accessToken, refreshToken } =
+        data.loginFacebook;
+      dispatch(storeUser({ avatar, fullName, email }));
+      storeToken(accessToken, refreshToken);
       router.push("/");
     }
   };
 
   useEffect(() => {
-    if (code) {
-      handleLogin();
+    if (code && state) {
+      switch (state) {
+        case LoginLinkingOptions.Login:
+          handleLogin();
+          break;
+        case LoginLinkingOptions.Linking:
+          connect(SocialType.Facebook, code, process.env.FB_REDIRECT).then(
+            () => {
+              router.push("/");
+            },
+          );
+          break;
+
+        default:
+          break;
+      }
     }
-  }, [code]);
+  }, [code, state]);
 
   return (
     <Box

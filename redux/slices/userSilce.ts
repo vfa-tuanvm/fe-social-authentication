@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { IAuthResponse } from "../../types/graphql.respose";
 import { RootState } from "../store";
 
 export interface UserSlice {
@@ -19,14 +18,11 @@ export const userSilce = createSlice({
 	name: "user",
 	initialState,
 	reducers: {
-		storeUser: (state, user: PayloadAction<IAuthResponse>) => {
-			const { avatar, fullName, email, accessToken, refreshToken } = user.payload;
+		storeUser: (state, user: PayloadAction<UserSlice>) => {
+			const { avatar, fullName, email } = user.payload;
 			state.avatar = avatar;
 			state.fullName = fullName;
 			state.email = email;
-
-			localStorage.setItem("accessToken", accessToken);
-			localStorage.setItem("refreshToken", refreshToken);
 		},
 	},
 });
