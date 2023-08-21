@@ -14,6 +14,10 @@ export interface ISignUpResponse {
 	signup: IAuthResponse;
 }
 
+export interface IFacebookLogin {
+	loginFacebook: IAuthResponse;
+}
+
 export interface IGraphQLError {
 	code: string;
 	message: string;
