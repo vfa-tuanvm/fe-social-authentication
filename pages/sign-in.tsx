@@ -27,14 +27,14 @@ import Link from "next/link";
 import { useForm, Controller } from "react-hook-form";
 import { ISignIn } from "../types/form.type";
 import { SIGNIN_MUTATION } from "../graphql/sign-in";
-import { toast } from "react-hot-toast";
 import client from "../apollo-client";
-import { IGraphQLError, ISignInResponse } from "../types/graphql.respose";
+import { ISignInResponse } from "../types/graphql.respose";
 import { useAppDispatch } from "../redux/redux-hook";
 import { storeUser } from "../redux/slices/userSilce";
 import { useRouter } from "next/navigation";
 import { genURLFacebookLogin } from "../utils/facebook";
 import { genURLGoogleLogin } from "../utils/google";
+import { handleException } from "../utils/handleException";
 
 export default function SignIn() {
   const router = useRouter();
@@ -75,26 +75,7 @@ export default function SignIn() {
       router.push("/");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      const { graphQLErrors } = error;
-
-      if (graphQLErrors) {
-        const { statusCode } = graphQLErrors[0] as IGraphQLError;
-        console.log("statusCode: ", statusCode);
-
-        switch (statusCode) {
-          case 404:
-            toast.error("Email not found");
-            break;
-          case 406:
-            toast.error("Wrong password");
-            break;
-          default:
-            toast.error("Something went wrong");
-            break;
-        }
-      } else {
-        toast.error("Something went wrong");
-      }
+      handleException(error);
     }
   };
 

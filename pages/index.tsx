@@ -1,10 +1,26 @@
-import { Box, Card, Grid, Switch, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, Grid, TextField, Typography } from "@mui/material";
 import { useAppSelector } from "../redux/redux-hook";
 import { selectUser } from "../redux/slices/userSilce";
 import Avatar from "@mui/material/Avatar";
+import { ISocialAcount } from "../types/graphql.respose";
+import { useEffect, useState } from "react";
+import { SocialType } from "../constance/enum";
+import { getAccounts } from "../utils/home";
 
 export default function Home() {
   const user = useAppSelector(selectUser);
+  const [socialAccounts, setSocialAccounts] = useState<ISocialAcount[]>([]);
+
+  const fetchListAccounts = async () => {
+    const respose = await getAccounts();
+    if (respose) {
+      setSocialAccounts(respose);
+    }
+  };
+
+  useEffect(() => {
+    fetchListAccounts();
+  }, []);
 
   return (
     <Box
@@ -16,7 +32,14 @@ export default function Home() {
         alignItems: "center",
       }}
     >
-      <Card sx={{ width: "40%", padding: "16px", boxShadow: 3 }}>
+      <Card
+        sx={{
+          width: "35%",
+          padding: "40px",
+          boxShadow: 3,
+          borderRadius: "12px",
+        }}
+      >
         <Grid container rowSpacing="20px">
           {user.avatar && (
             <Grid item xs={12}>
@@ -45,32 +68,35 @@ export default function Home() {
               value={user.email}
             />
           </Grid>
-          <Grid item xs={6}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                columnGap: "8px",
-                alignItems: "center",
-              }}
-            >
-              <Switch />
-              <Typography>Facebook</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                columnGap: "8px",
-                alignItems: "center",
-              }}
-            >
-              <Switch />
-              <Typography>Google</Typography>
-            </Box>
-          </Grid>
+          {Object.values(SocialType).map((mediaType) => (
+            <Grid item xs={12} key={mediaType}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  columnGap: "8px",
+                  alignItems: "center",
+                }}
+              >
+                <Grid item xs={8}>
+                  <Typography>{mediaType}</Typography>
+                </Grid>
+
+                <Grid item xs={4}>
+                  {socialAccounts.filter((acc) => acc.type === mediaType)
+                    .length > 0 ? (
+                    <Button fullWidth variant="contained" color="error">
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button fullWidth variant="contained">
+                      Connect
+                    </Button>
+                  )}
+                </Grid>
+              </Box>
+            </Grid>
+          ))}
         </Grid>
       </Card>
     </Box>
