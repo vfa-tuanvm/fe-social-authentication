@@ -23,11 +23,11 @@ import { useForm, Controller } from "react-hook-form";
 import { ISignUp } from "../types/form.type";
 import client from "../apollo-client";
 import { SIGNUP_MUTATION } from "../graphql/sign-up";
-import { toast } from "react-hot-toast";
 import { useAppDispatch } from "../redux/redux-hook";
-import { IGraphQLError, ISignUpResponse } from "../types/graphql.respose";
+import { ISignUpResponse } from "../types/graphql.respose";
 import { storeUser } from "../redux/slices/userSilce";
 import { useRouter } from "next/router";
+import { handleException } from "../utils/handleException";
 
 export default function SignUp() {
   const theme = useTheme();
@@ -70,22 +70,7 @@ export default function SignUp() {
 
       router.push("/");
     } catch (error: any) {
-      const { graphQLErrors } = error;
-
-      if (graphQLErrors) {
-        const { statusCode } = graphQLErrors[0] as IGraphQLError;
-
-        switch (statusCode) {
-          case 409:
-            toast.error("Email has been used");
-            break;
-          default:
-            toast.error("Something went wrong");
-            break;
-        }
-      } else {
-        toast.error("Something went wrong");
-      }
+      handleException(error);
     }
   };
 

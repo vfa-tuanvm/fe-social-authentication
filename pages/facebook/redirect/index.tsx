@@ -6,6 +6,7 @@ import { storeUser } from "../../../redux/slices/userSilce";
 import { IFacebookLogin } from "../../../types/graphql.respose";
 import client from "../../../apollo-client";
 import { Box, Typography } from "@mui/material";
+import { handleException } from "../../../utils/handleException";
 
 export default function FacebookRedirect() {
   const searchParams = useSearchParams();
@@ -15,17 +16,23 @@ export default function FacebookRedirect() {
   const code = searchParams.get("code");
 
   const handleLogin = async () => {
-    const { data } = await client.mutate<IFacebookLogin>({
-      mutation: FACEBOOK_LOGIN,
-      variables: {
-        code,
-        redirectURL: process.env.FB_REDIRECT,
-      },
-    });
+    try {
+      const { data } = await client.mutate<IFacebookLogin>({
+        mutation: FACEBOOK_LOGIN,
+        variables: {
+          code,
+          redirectURL: process.env.FB_REDIRECT,
+        },
+      });
 
-    if (data) {
-      dispatch(storeUser(data.loginFacebook));
-      router.push("/");
+      if (data) {
+        dispatch(storeUser(data.loginFacebook));
+        router.push("/");
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      handleException(error);
+      router.push("/sign-in");
     }
   };
 

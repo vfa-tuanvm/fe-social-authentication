@@ -6,6 +6,7 @@ import { IGoogleLogin } from "../../../types/graphql.respose";
 import client from "../../../apollo-client";
 import { Box, Typography } from "@mui/material";
 import { GOOGLE_LOGIN } from "../../../graphql/google";
+import { handleException } from "../../../utils/handleException";
 
 export default function GoogleRedirect() {
   const searchParams = useSearchParams();
@@ -15,16 +16,23 @@ export default function GoogleRedirect() {
   const code = searchParams.get("code");
 
   const handleLogin = async () => {
-    const { data } = await client.mutate<IGoogleLogin>({
-      mutation: GOOGLE_LOGIN,
-      variables: {
-        input: code,
-      },
-    });
+    try {
+      const { data } = await client.mutate<IGoogleLogin>({
+        mutation: GOOGLE_LOGIN,
+        variables: {
+          input: code,
+        },
+      });
 
-    if (data) {
-      dispatch(storeUser(data.loginGoogle));
-      router.push("/");
+      if (data) {
+        dispatch(storeUser(data.loginGoogle));
+        router.push("/");
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      handleException(error);
+      router.push("/sign-in");
     }
   };
 
