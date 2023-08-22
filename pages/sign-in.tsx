@@ -35,6 +35,8 @@ import { storeUser } from "../redux/slices/userSilce";
 import { useRouter } from "next/navigation";
 import { genURLFacebookLogin } from "../utils/facebook";
 import { genURLGoogleLogin } from "../utils/google";
+import { LoginLinkingOptions } from "../constance/enum";
+import { storeToken } from "../utils/home";
 
 export default function SignIn() {
   const router = useRouter();
@@ -69,10 +71,20 @@ export default function SignIn() {
       });
 
       if (data) {
-        dispatch(storeUser(data.signin));
+        const { avatar, fullName, email, accessToken, refreshToken } =
+          data.signin;
+        dispatch(
+          storeUser({
+            avatar,
+            fullName,
+            email,
+          }),
+        );
+
+        storeToken(accessToken, refreshToken);
+        router.push("/");
       }
 
-      router.push("/");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const { graphQLErrors } = error;
@@ -228,7 +240,7 @@ export default function SignIn() {
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <MuiLink
-                href={genURLFacebookLogin()}
+                href={genURLFacebookLogin(LoginLinkingOptions.Login)}
                 sx={{
                   backgroundColor: theme.palette.primary.main,
                   borderRadius: 1,
@@ -254,7 +266,7 @@ export default function SignIn() {
             </Grid>
             <Grid item xs={6}>
               <MuiLink
-                href={genURLGoogleLogin("login")}
+                href={genURLGoogleLogin(LoginLinkingOptions.Login)}
                 sx={{
                   backgroundColor: red[700],
                   borderRadius: 1,

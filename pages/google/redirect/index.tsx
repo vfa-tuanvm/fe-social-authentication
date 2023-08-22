@@ -6,6 +6,8 @@ import { IGoogleLogin } from "../../../types/graphql.respose";
 import client from "../../../apollo-client";
 import { Box, Typography } from "@mui/material";
 import { GOOGLE_LOGIN } from "../../../graphql/google";
+import { LoginLinkingOptions, SocialType } from "../../../constance/enum";
+import { connect, storeToken } from "../../../utils/home";
 
 export default function GoogleRedirect() {
   const searchParams = useSearchParams();
@@ -13,6 +15,7 @@ export default function GoogleRedirect() {
   const dispatch = useAppDispatch();
 
   const code = searchParams.get("code");
+  const state = searchParams.get("state");
 
   const handleLogin = async () => {
     const { data } = await client.mutate<IGoogleLogin>({
@@ -23,17 +26,31 @@ export default function GoogleRedirect() {
     });
 
     if (data) {
-      dispatch(storeUser(data.loginGoogle));
+      const { avatar, fullName, email, accessToken, refreshToken } =
+        data.loginGoogle;
+      dispatch(storeUser({ avatar, fullName, email }));
+      storeToken(accessToken, refreshToken);
       router.push("/");
     }
   };
 
   useEffect(() => {
-    if (code) {
-      handleLogin();
+    if (code && state) {
+      switch (state) {
+        case LoginLinkingOptions.Login:
+          handleLogin();
+          break;
+        case LoginLinkingOptions.Linking:
+          connect(SocialType.Google, code).then(() => {
+            router.push("/");
+          });
+          break;
+        default:
+          break;
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code]);
+  }, [code, state]);
 
   return (
     <Box

@@ -10,9 +10,10 @@ const nextConfig = {
 		GOOGLE_PROFILE_SCOPE: process.env.GOOGLE_PROFILE_SCOPE,
 		GOOGLE_OAUTH_REDIRECT: process.env.GOOGLE_OAUTH_REDIRECT,
 		GOOGLE_OAUTH_CLIENT_ID: process.env.GOOGLE_OAUTH_CLIENT_ID,
+		DEFAULT_AVATAR: process.env.DEFAULT_AVATAR,
 	},
 	images: {
-		domains: ["platform-lookaside.fbsbx.com"],
+		domains: ["platform-lookaside.fbsbx.com", "img.myloview.com"],
 	},
 };
 

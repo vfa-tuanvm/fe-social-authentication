@@ -1,10 +1,104 @@
-import { Box, Card, Grid, Switch, TextField, Typography } from "@mui/material";
-import { useAppSelector } from "../redux/redux-hook";
-import { selectUser } from "../redux/slices/userSilce";
+import {
+  Box,
+  Button,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useAppDispatch, useAppSelector } from "../redux/redux-hook";
+import { selectUser, storeUser } from "../redux/slices/userSilce";
 import Avatar from "@mui/material/Avatar";
+import { ISocialAcount } from "../types/graphql.respose";
+import { useEffect, useState } from "react";
+import { LoginLinkingOptions, SocialType } from "../constance/enum";
+import { getAccounts, getUserInfo } from "../utils/home";
+import { disconnect } from "../utils/home";
+import { useRouter } from "next/router";
+import { genURLFacebookLogin } from "../utils/facebook";
+import { genURLGoogleLogin } from "../utils/google";
 
 export default function Home() {
   const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  const [socialAccounts, setSocialAccounts] = useState<ISocialAcount[]>([]);
+
+  console.log("socialAccounts: ", socialAccounts);
+  const [open, setOpen] = useState(false);
+  const [disconnectedType, setDisconnectedType] = useState<SocialType>();
+
+  const handleClickOpen = (type: SocialType) => () => {
+    setDisconnectedType(type);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setDisconnectedType(undefined);
+  };
+
+  const fetchListAccounts = async () => {
+    console.log("fetch accounts");
+    const respose = await getAccounts();
+    if (respose) {
+      setSocialAccounts(respose);
+    }
+  };
+
+  const fetchUser = async () => {
+    if (!user.avatar && !user.email && !user.fullName) {
+      const respose = await getUserInfo();
+      if (respose) {
+        dispatch(storeUser(respose));
+      }
+    }
+  };
+
+  const handleDisconnect = async () => {
+    if (disconnectedType) {
+      const respose = await disconnect(disconnectedType);
+      if (respose) {
+        setSocialAccounts(socialAccounts.filter((acc) => acc.type !== respose));
+      }
+    }
+    setOpen(false);
+  };
+
+  const handleConnect = (type: SocialType) => () => {
+    let url = "";
+    switch (type) {
+      case SocialType.Facebook:
+        url = genURLFacebookLogin(LoginLinkingOptions.Linking);
+        break;
+      case SocialType.Google:
+        url = genURLGoogleLogin(LoginLinkingOptions.Linking);
+        break;
+      default:
+        break;
+    }
+
+    if (url) {
+      router.push(url);
+    }
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    router.push("/sign-in");
+  };
+
+  useEffect(() => {
+    fetchListAccounts();
+    fetchUser();
+  }, []);
 
   return (
     <Box
@@ -16,17 +110,23 @@ export default function Home() {
         alignItems: "center",
       }}
     >
-      <Card sx={{ width: "40%", padding: "16px", boxShadow: 3 }}>
+      <Card
+        sx={{
+          width: "35%",
+          padding: "40px",
+          boxShadow: 3,
+          borderRadius: "12px",
+        }}
+      >
         <Grid container rowSpacing="20px">
-          {user.avatar && (
-            <Grid item xs={12}>
-              <Avatar
-                alt="Remy Sharp"
-                src={user.avatar}
-                sx={{ width: 100, height: 100, marginX: "auto" }}
-              />
-            </Grid>
-          )}
+          <Grid item xs={12}>
+            <Avatar
+              alt="Remy Sharp"
+              src={user.avatar ?? process.env.DEFAULT_AVATAR}
+              sx={{ width: 100, height: 100, marginX: "auto" }}
+            />
+          </Grid>
+
           <Grid item xs={12}>
             <TextField
               disabled
@@ -45,34 +145,92 @@ export default function Home() {
               value={user.email}
             />
           </Grid>
-          <Grid item xs={6}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                columnGap: "8px",
-                alignItems: "center",
-              }}
-            >
-              <Switch />
-              <Typography>Facebook</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                columnGap: "8px",
-                alignItems: "center",
-              }}
-            >
-              <Switch />
-              <Typography>Google</Typography>
-            </Box>
-          </Grid>
+          {Object.values(SocialType).map((mediaType) => (
+            <Grid item xs={12} key={mediaType}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  columnGap: "8px",
+                  alignItems: "center",
+                }}
+              >
+                <Grid item xs={8}>
+                  <Typography variant="h6" sx={{ textTransform: "capitalize" }}>
+                    {mediaType.toLowerCase()}
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={4}>
+                  {socialAccounts.filter((acc) => acc.type === mediaType)
+                    .length > 0 ? (
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={handleClickOpen(mediaType)}
+                      color="error"
+                    >
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleConnect(mediaType)}
+                      fullWidth
+                      variant="contained"
+                    >
+                      Connect
+                    </Button>
+                  )}
+                </Grid>
+              </Box>
+            </Grid>
+          ))}
         </Grid>
+        <Box
+          sx={{
+            marginTop: "56px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button onClick={handleSignOut} variant="contained">
+            Sign out
+          </Button>
+        </Box>
       </Card>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Do you want to disconnect to{" "}
+          <Typography
+            variant="h6"
+            sx={{ textTransform: "capitalize", display: "inline" }}
+          >
+            {disconnectedType?.toLowerCase()}
+          </Typography>
+          ?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            You still be able to connect to{" "}
+            <Typography sx={{ textTransform: "capitalize", display: "inline" }}>
+              {disconnectedType?.toLowerCase()}
+            </Typography>{" "}
+            in the future.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleDisconnect} autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
