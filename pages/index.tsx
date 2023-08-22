@@ -29,6 +29,8 @@ export default function Home() {
   const router = useRouter();
 
   const [socialAccounts, setSocialAccounts] = useState<ISocialAcount[]>([]);
+
+  console.log("socialAccounts: ", socialAccounts);
   const [open, setOpen] = useState(false);
   const [disconnectedType, setDisconnectedType] = useState<SocialType>();
 
@@ -43,6 +45,7 @@ export default function Home() {
   };
 
   const fetchListAccounts = async () => {
+    console.log("fetch accounts");
     const respose = await getAccounts();
     if (respose) {
       setSocialAccounts(respose);
