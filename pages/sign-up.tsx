@@ -29,10 +29,12 @@ import { IGraphQLError, ISignUpResponse } from "../types/graphql.respose";
 import { storeUser } from "../redux/slices/userSilce";
 import { useRouter } from "next/router";
 import { storeToken } from "../utils/home";
+import useTrans from "../lang/lang-hook";
 
 export default function SignUp() {
   const theme = useTheme();
   const router = useRouter();
+  const trans = useTrans();
 
   const dispatch = useAppDispatch();
   const { control, handleSubmit, watch } = useForm<ISignUp>({
@@ -80,14 +82,14 @@ export default function SignUp() {
 
         switch (statusCode) {
           case 409:
-            toast.error("Email has been used");
+            toast.error(trans.error.usedEmail);
             break;
           default:
-            toast.error("Something went wrong");
+            toast.error(trans.error.sthWrong);
             break;
         }
       } else {
-        toast.error("Something went wrong");
+        toast.error(trans.error.sthWrong);
       }
     }
   };
@@ -110,10 +112,10 @@ export default function SignUp() {
               variant="h4"
               sx={{ fontWeight: "600", color: grey[800] }}
             >
-              Sign Up
+              {trans.signUp.title}
             </Typography>
             <Typography variant="h6" sx={{ color: grey[700] }}>
-              Welcome to our website 👋
+              {trans.signUp.subTitle} 👋
             </Typography>
           </Box>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -125,7 +127,7 @@ export default function SignUp() {
                   rules={{
                     required: {
                       value: true,
-                      message: "Email is required",
+                      message: trans.validation.requiredEmail,
                     },
                   }}
                   render={({
@@ -139,7 +141,7 @@ export default function SignUp() {
                       error={invalid}
                       helperText={error ? error.message : null}
                       id="outlined-basic"
-                      label="Email"
+                      label={trans.component.input.email}
                       variant="outlined"
                     />
                   )}
@@ -152,7 +154,7 @@ export default function SignUp() {
                   rules={{
                     required: {
                       value: true,
-                      message: "Full name is required",
+                      message: trans.validation.requiredFullName,
                     },
                   }}
                   render={({
@@ -166,7 +168,7 @@ export default function SignUp() {
                       value={value}
                       onChange={onChange}
                       id="outlined-basic"
-                      label="Full Name"
+                      label={trans.component.input.name}
                       variant="outlined"
                     />
                   )}
@@ -174,19 +176,21 @@ export default function SignUp() {
               </Grid>
               <Grid item xs={12}>
                 <FormControl fullWidth variant="outlined">
-                  <InputLabel htmlFor="password">Password</InputLabel>
+                  <InputLabel htmlFor="password">
+                    {trans.component.input.password}
+                  </InputLabel>
                   <Controller
                     control={control}
                     name="password"
                     rules={{
                       required: {
                         value: true,
-                        message: "Password is required",
+                        message: trans.validation.requiredPass,
                       },
                       pattern: {
                         value:
                           /((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/,
-                        message: "Password too weak",
+                        message: trans.validation.weakPass,
                       },
                     }}
                     render={({
@@ -216,7 +220,7 @@ export default function SignUp() {
                               </IconButton>
                             </InputAdornment>
                           }
-                          label="Password"
+                          label={trans.component.input.password}
                         />
                         {error && (
                           <FormHelperText error>{error.message}</FormHelperText>
@@ -228,18 +232,20 @@ export default function SignUp() {
               </Grid>
               <Grid item xs={12}>
                 <FormControl fullWidth variant="outlined">
-                  <InputLabel htmlFor="re-password">Re-password</InputLabel>
+                  <InputLabel htmlFor="re-password">
+                    {trans.component.input.rePassword}
+                  </InputLabel>
                   <Controller
                     control={control}
                     name="rePassword"
                     rules={{
                       required: {
                         value: true,
-                        message: "Re password is required",
+                        message: trans.validation.requiredRePass,
                       },
                       validate: (val: string) => {
                         if (watch("password") != val) {
-                          return "Your passwords do no match";
+                          return trans.validation.notMatchPass;
                         }
                       },
                     }}
@@ -270,7 +276,7 @@ export default function SignUp() {
                               </IconButton>
                             </InputAdornment>
                           }
-                          label="Re-password"
+                          label={trans.component.input.rePassword}
                         />
                         {error && (
                           <FormHelperText error>{error.message}</FormHelperText>
@@ -288,13 +294,13 @@ export default function SignUp() {
               variant="contained"
               sx={{ marginTop: "32px" }}
             >
-              Sign up
+              {trans.component.button.signUp}
             </Button>
           </form>
           <Typography variant="body2" mt="20px" sx={{ textAlign: "center" }}>
-            If you have an account,{" "}
+            {trans.signUp.haveAccount},{" "}
             <Link style={{ color: theme.palette.primary.main }} href="/sign-in">
-              Sign in here
+              {trans.signUp.signInHere}
             </Link>
           </Typography>
         </CardContent>

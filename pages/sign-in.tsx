@@ -37,8 +37,10 @@ import { genURLFacebookLogin } from "../utils/facebook";
 import { genURLGoogleLogin } from "../utils/google";
 import { LoginLinkingOptions } from "../constance/enum";
 import { storeToken } from "../utils/home";
+import useTrans from "../lang/lang-hook";
 
 export default function SignIn() {
+  const trans = useTrans();
   const router = useRouter();
   const theme = useTheme();
   const dispatch = useAppDispatch();
@@ -95,17 +97,17 @@ export default function SignIn() {
 
         switch (statusCode) {
           case 404:
-            toast.error("Email not found");
+            toast.error(trans.error.emailNotFound);
             break;
           case 406:
-            toast.error("Wrong password");
+            toast.error(trans.error.wrongPass);
             break;
           default:
-            toast.error("Something went wrong");
+            toast.error(trans.error.sthWrong);
             break;
         }
       } else {
-        toast.error("Something went wrong");
+        toast.error(trans.error.sthWrong);
       }
     }
   };
@@ -128,10 +130,10 @@ export default function SignIn() {
               variant="h4"
               sx={{ fontWeight: "600", color: grey[800] }}
             >
-              Sign In
+              {trans.signIn.title}
             </Typography>
             <Typography variant="h6" sx={{ color: grey[700] }}>
-              Have a nice day 🖐
+              {trans.signIn.subTitle} 🖐
             </Typography>
           </Box>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -143,7 +145,7 @@ export default function SignIn() {
                   rules={{
                     required: {
                       value: true,
-                      message: "Email is required",
+                      message: trans.validation.requiredEmail,
                     },
                   }}
                   render={({
@@ -153,7 +155,7 @@ export default function SignIn() {
                     <TextField
                       fullWidth
                       id="outlined-basic"
-                      label="Email"
+                      label={trans.component.input.email}
                       variant="outlined"
                       helperText={error ? error.message : null}
                       error={invalid}
@@ -166,7 +168,7 @@ export default function SignIn() {
               <Grid item xs={12}>
                 <FormControl fullWidth variant="outlined">
                   <InputLabel htmlFor="outlined-adornment-password">
-                    Password
+                    {trans.component.input.password}
                   </InputLabel>
                   <Controller
                     name="password"
@@ -174,12 +176,12 @@ export default function SignIn() {
                     rules={{
                       required: {
                         value: true,
-                        message: "Password is required",
+                        message: trans.validation.requiredPass,
                       },
                       pattern: {
                         value:
                           /((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/,
-                        message: "Password too weak",
+                        message: trans.validation.weakPass,
                       },
                     }}
                     render={({
@@ -209,7 +211,7 @@ export default function SignIn() {
                               </IconButton>
                             </InputAdornment>
                           }
-                          label="Password"
+                          label={trans.component.input.password}
                         />
                         {invalid && (
                           <FormHelperText error>
@@ -230,11 +232,13 @@ export default function SignIn() {
               variant="contained"
               sx={{ marginTop: "32px" }}
             >
-              Sign In
+              {trans.component.button.signIn}
             </Button>
           </form>
           <Divider sx={{ marginY: "16px" }}>
-            <Typography variant="subtitle2">OR</Typography>
+            <Typography variant="subtitle2">
+              {trans.signIn.orDivider}
+            </Typography>
           </Divider>
 
           <Grid container spacing={2}>
@@ -293,9 +297,9 @@ export default function SignIn() {
           </Grid>
 
           <Typography variant="body2" mt="20px" sx={{ textAlign: "center" }}>
-            Do not have an account?{" "}
+            {trans.signIn.notHaveAccount}?{" "}
             <Link style={{ color: theme.palette.primary.main }} href="/sign-up">
-              Sign up here.
+              {trans.signIn.signUpHere}
             </Link>
           </Typography>
         </CardContent>

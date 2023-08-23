@@ -14,8 +14,9 @@ import {
 	IGraphQLError,
 } from "../types/graphql.respose";
 import { SocialType } from "../constance/enum";
+import ILanguage from "../types/lang";
 
-export const getAccounts = async () => {
+export const getAccounts = async (trans: ILanguage) => {
 	const token = localStorage.getItem("accessToken");
 
 	try {
@@ -38,21 +39,21 @@ export const getAccounts = async () => {
 			console.log("statusCode: ", statusCode);
 
 			switch (statusCode) {
-				case 400:
-					toast.error("You are unauthrorized");
+				case 401:
+					toast.error(trans.error.unauthorized);
 					break;
 
 				default:
-					toast.error("Something went wrong");
+					toast.error(trans.error.sthWrong);
 					break;
 			}
 		} else {
-			toast.error("Something went wrong");
+			toast.error(trans.error.sthWrong);
 		}
 	}
 };
 
-export const disconnect = async (type: SocialType) => {
+export const disconnect = async (trans: ILanguage, type: SocialType) => {
 	const token = localStorage.getItem("accessToken");
 
 	try {
@@ -68,7 +69,7 @@ export const disconnect = async (type: SocialType) => {
 			},
 		});
 		if (data) {
-			toast.success("Disconnect success.");
+			toast.success(trans.success.disconnect);
 			return data.disconnect;
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,20 +81,20 @@ export const disconnect = async (type: SocialType) => {
 
 			switch (statusCode) {
 				case 400:
-					toast.error("You are unauthrorized");
+					toast.error(trans.error.unauthorized);
 					break;
 
 				default:
-					toast.error("Something went wrong");
+					toast.error(trans.error.sthWrong);
 					break;
 			}
 		} else {
-			toast.error("Something went wrong");
+			toast.error(trans.error.sthWrong);
 		}
 	}
 };
 
-export const getUserInfo = async () => {
+export const getUserInfo = async (trans: ILanguage) => {
 	const token = localStorage.getItem("accessToken");
 
 	try {
@@ -117,15 +118,15 @@ export const getUserInfo = async () => {
 
 			switch (statusCode) {
 				case 400:
-					toast.error("You are unauthrorized");
+					toast.error(trans.error.unauthorized);
 					break;
 
 				default:
-					toast.error("Something went wrong");
+					toast.error(trans.error.sthWrong);
 					break;
 			}
 		} else {
-			toast.error("Something went wrong");
+			toast.error(trans.error.sthWrong);
 		}
 	}
 };
@@ -135,8 +136,7 @@ export const storeToken = (accessToken: string, refreshToken: string) => {
 	localStorage.setItem("refreshToken", refreshToken);
 };
 
-export const connect = async (type: SocialType, code: string, redirectURL?: string) => {
-	console.log("redirectURL: ", redirectURL);
+export const connect = async (trans: ILanguage, type: SocialType, code: string, redirectURL?: string) => {
 	try {
 		const token = localStorage.getItem("accessToken");
 
@@ -155,7 +155,7 @@ export const connect = async (type: SocialType, code: string, redirectURL?: stri
 		});
 
 		if (data) {
-			toast.success("Connect success.");
+			toast.success(trans.success.connect);
 			return data.linkSocialAccount;
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -167,23 +167,23 @@ export const connect = async (type: SocialType, code: string, redirectURL?: stri
 
 			switch (statusCode) {
 				case 400:
-					toast.error("You are unauthrorized");
+					toast.error(trans.error.unauthorized);
 					break;
 				case 409:
-					toast.error(`Your account has connected to ${type.toLowerCase()}`);
+					toast.error(`${trans.error.connected} ${type.toLowerCase()}`);
 					break;
 				case 406:
-					toast.error(`This ${type.toLowerCase()} account has connected to other user`);
+					toast.error(trans.error.connectedToOtherUser(type));
 					break;
 				case 500:
-					toast.error("Please try agian later");
+					toast.error(trans.error.tryAgain);
 					break;
 				default:
-					toast.error("Something went wrong");
+					toast.error(trans.error.sthWrong);
 					break;
 			}
 		} else {
-			toast.error("Something went wrong");
+			toast.error(trans.error.sthWrong);
 		}
 	}
 };

@@ -8,11 +8,13 @@ import { Box, Typography } from "@mui/material";
 import { GOOGLE_LOGIN } from "../../../graphql/google";
 import { LoginLinkingOptions, SocialType } from "../../../constance/enum";
 import { connect, storeToken } from "../../../utils/home";
+import useTrans from "../../../lang/lang-hook";
 
 export default function GoogleRedirect() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const trans = useTrans();
 
   const code = searchParams.get("code");
   const state = searchParams.get("state");
@@ -41,7 +43,7 @@ export default function GoogleRedirect() {
           handleLogin();
           break;
         case LoginLinkingOptions.Linking:
-          connect(SocialType.Google, code).then(() => {
+          connect(trans, SocialType.Google, code).then(() => {
             router.push("/");
           });
           break;
@@ -72,7 +74,7 @@ export default function GoogleRedirect() {
           alignItems: "baseline",
         }}
       >
-        <Typography variant="h5">Authenticating</Typography>
+        <Typography variant="h5">{trans.signIn.authen}</Typography>
         <div className="dot-typing"></div>
       </Box>
     </Box>

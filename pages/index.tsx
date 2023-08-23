@@ -22,15 +22,16 @@ import { disconnect } from "../utils/home";
 import { useRouter } from "next/router";
 import { genURLFacebookLogin } from "../utils/facebook";
 import { genURLGoogleLogin } from "../utils/google";
+import useTrans from "../lang/lang-hook";
 
 export default function Home() {
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const trans = useTrans();
 
   const [socialAccounts, setSocialAccounts] = useState<ISocialAcount[]>([]);
 
-  console.log("socialAccounts: ", socialAccounts);
   const [open, setOpen] = useState(false);
   const [disconnectedType, setDisconnectedType] = useState<SocialType>();
 
@@ -45,8 +46,7 @@ export default function Home() {
   };
 
   const fetchListAccounts = async () => {
-    console.log("fetch accounts");
-    const respose = await getAccounts();
+    const respose = await getAccounts(trans);
     if (respose) {
       setSocialAccounts(respose);
     }
@@ -54,7 +54,7 @@ export default function Home() {
 
   const fetchUser = async () => {
     if (!user.avatar && !user.email && !user.fullName) {
-      const respose = await getUserInfo();
+      const respose = await getUserInfo(trans);
       if (respose) {
         dispatch(storeUser(respose));
       }
@@ -63,7 +63,7 @@ export default function Home() {
 
   const handleDisconnect = async () => {
     if (disconnectedType) {
-      const respose = await disconnect(disconnectedType);
+      const respose = await disconnect(trans, disconnectedType);
       if (respose) {
         setSocialAccounts(socialAccounts.filter((acc) => acc.type !== respose));
       }
@@ -131,7 +131,7 @@ export default function Home() {
             <TextField
               disabled
               fullWidth
-              label="Name"
+              label={trans.component.input.name}
               variant="outlined"
               value={user.fullName}
             />
@@ -140,7 +140,7 @@ export default function Home() {
             <TextField
               disabled
               fullWidth
-              label="Email"
+              label={trans.component.input.email}
               variant="outlined"
               value={user.email}
             />
@@ -155,13 +155,13 @@ export default function Home() {
                   alignItems: "center",
                 }}
               >
-                <Grid item xs={8}>
+                <Grid item xs={7}>
                   <Typography variant="h6" sx={{ textTransform: "capitalize" }}>
                     {mediaType.toLowerCase()}
                   </Typography>
                 </Grid>
 
-                <Grid item xs={4}>
+                <Grid item xs={7}>
                   {socialAccounts.filter((acc) => acc.type === mediaType)
                     .length > 0 ? (
                     <Button
@@ -170,7 +170,7 @@ export default function Home() {
                       onClick={handleClickOpen(mediaType)}
                       color="error"
                     >
-                      Disconnect
+                      {trans.component.button.disconnect}
                     </Button>
                   ) : (
                     <Button
@@ -178,7 +178,7 @@ export default function Home() {
                       fullWidth
                       variant="contained"
                     >
-                      Connect
+                      {trans.component.button.connect}
                     </Button>
                   )}
                 </Grid>
@@ -194,7 +194,7 @@ export default function Home() {
           }}
         >
           <Button onClick={handleSignOut} variant="contained">
-            Sign out
+            {trans.component.button.signOut}
           </Button>
         </Box>
       </Card>
@@ -206,7 +206,7 @@ export default function Home() {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          Do you want to disconnect to{" "}
+          {trans.home.disconTitle}{" "}
           <Typography
             variant="h6"
             sx={{ textTransform: "capitalize", display: "inline" }}
@@ -217,17 +217,19 @@ export default function Home() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            You still be able to connect to{" "}
+            {trans.home.disconContentStart}{" "}
             <Typography sx={{ textTransform: "capitalize", display: "inline" }}>
               {disconnectedType?.toLowerCase()}
             </Typography>{" "}
-            in the future.
+            {trans.home.disconContentEnd}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleClose}>
+            {trans.component.button.disagree}
+          </Button>
           <Button onClick={handleDisconnect} autoFocus>
-            Agree
+            {trans.component.button.agree}
           </Button>
         </DialogActions>
       </Dialog>

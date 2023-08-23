@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
+	i18n: {
+		locales: ["en", "vi"],
+		defaultLocale: "en",
+	},
 	env: {
 		BE_URL: process.env.BE_URL,
 		FB_APP_ID: process.env.FB_APP_ID,

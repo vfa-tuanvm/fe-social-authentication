@@ -8,11 +8,13 @@ import client from "../../../apollo-client";
 import { Box, Typography } from "@mui/material";
 import { connect, storeToken } from "../../../utils/home";
 import { LoginLinkingOptions, SocialType } from "../../../constance/enum";
+import useTrans from "../../../lang/lang-hook";
 
 export default function FacebookRedirect() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const trans = useTrans();
 
   const code = searchParams.get("code");
   const state = searchParams.get("state");
@@ -42,11 +44,14 @@ export default function FacebookRedirect() {
           handleLogin();
           break;
         case LoginLinkingOptions.Linking:
-          connect(SocialType.Facebook, code, process.env.FB_REDIRECT).then(
-            () => {
-              router.push("/");
-            },
-          );
+          connect(
+            trans,
+            SocialType.Facebook,
+            code,
+            process.env.FB_REDIRECT,
+          ).then(() => {
+            router.push("/");
+          });
           break;
 
         default:
@@ -75,7 +80,7 @@ export default function FacebookRedirect() {
           alignItems: "baseline",
         }}
       >
-        <Typography variant="h5">Authenticating</Typography>
+        <Typography variant="h5">{trans.signIn.authen}</Typography>
         <div className="dot-typing"></div>
       </Box>
     </Box>
